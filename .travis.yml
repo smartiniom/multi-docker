@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t smartiniom/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+ - docker run smartiniom/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t smartiniom/multi-client ./client
+  - docker build -t smartiniom/multi-nginx ./nginx
+  - docker build -t smartiniom/multi-server ./server
+  - docker build -t smartiniom/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push smartiniom/multi-client
+  - docker push smartiniom/multi-nginx
+  - docker push smartiniom/multi-server
+  - docker push smartiniom/multi-worker
+
